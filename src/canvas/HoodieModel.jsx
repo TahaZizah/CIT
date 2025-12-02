@@ -9,7 +9,8 @@ export default function HoodieModel(props) {
 
     // Load the GLTF model. Ensure 'hoodie.glb' is in the public folder.
     // We enable Draco compression support by passing a decoder path (CDN).
-    const { scene } = useGLTF('/hoodie.glb', 'https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+    const modelPath = `${import.meta.env.BASE_URL}hoodie.glb`;
+    const { scene } = useGLTF(modelPath, 'https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
 
     const { viewport } = useThree();
     const isMobile = viewport.width < 5; // Rough estimate for mobile in R3F units
@@ -52,4 +53,4 @@ export default function HoodieModel(props) {
 }
 
 // Preload the model
-useGLTF.preload('/hoodie.glb', 'https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+useGLTF.preload(`${import.meta.env.BASE_URL}hoodie.glb`, 'https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
