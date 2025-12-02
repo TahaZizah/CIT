@@ -1,7 +1,7 @@
-import React, { useState, Suspense } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import Scene from '../canvas/Scene';
+
 import Navbar from '../components/Navbar';
 import { Star, Truck, ShieldCheck } from 'lucide-react';
 
@@ -118,7 +118,11 @@ export default function OrderPage() {
                     {/* Left Column: Visuals */}
                     {/* Left Column: Visuals */}
                     <div className="h-[500px] lg:h-auto w-full relative bg-[#0a0a0a] border border-gray-800 rounded-sm overflow-hidden">
-                        <Scene />
+                        <img
+                            src="/hoodie.JPG"
+                            alt="CIT Hoodie"
+                            className="w-full h-full object-cover"
+                        />
                         {/* Overlay Badge */}
                         <div className="absolute top-4 left-4 bg-[#00f3ff] text-black text-xs font-bold px-2 py-1 uppercase tracking-wider z-10">
                             New
