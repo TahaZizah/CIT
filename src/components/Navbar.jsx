@@ -34,7 +34,7 @@ export default function Navbar() {
                     <div className="relative h-14 w-auto md:h-16 flex items-center justify-center">
                         <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                         <img
-                            src="/Cit.png"
+                            src={`${import.meta.env.BASE_URL}Cit.png`}
                             alt="Club Logo"
                             className="relative h-full w-auto object-contain drop-shadow-[0_0_6px_rgba(255,255,255,0.3)]"
                         />
