@@ -43,7 +43,7 @@ export default function OrderPage() {
         year: '',
         major: '',
         phone: '',
-        payment: 'Cash on Delivery',
+        payment: '',
         size: '',
         rating: '0'
     });
@@ -57,6 +57,15 @@ export default function OrderPage() {
 
     const handleRatingChange = (rating) => {
         setFormData({ ...formData, rating: String(rating) });
+    };
+
+    const SIZE_MAPPING = {
+        'S': 'S (Small)',
+        'M': 'M (Medium)',
+        'L': 'L (Large)',
+        'XL': 'XL (Extra Large)',
+        'XXL': 'XXL (Double Extra Large)',
+        'XXXL': 'XXXL (Triple Extra Large)'
     };
 
     const handleSubmit = async (e) => {
@@ -73,7 +82,8 @@ export default function OrderPage() {
         formBody.append(FORM_FIELDS.YEAR, formData.year);
         formBody.append(FORM_FIELDS.MAJOR, formData.major);
         formBody.append(FORM_FIELDS.PHONE, formData.phone);
-        formBody.append(FORM_FIELDS.SIZE, formData.size);
+        // Map the size code (S, M, L) to the full string expected by Google Forms
+        formBody.append(FORM_FIELDS.SIZE, SIZE_MAPPING[formData.size] || formData.size);
 
         try {
             await fetch(GOOGLE_FORM_ACTION_URL, {
