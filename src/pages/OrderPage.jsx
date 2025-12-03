@@ -17,7 +17,7 @@ import NavBar from '../components/Navbar';
 
 // 1. URL FIX: We changed '/viewform' to '/formResponse'
 // The ID '1FAIpQLSddnVTbtmhTJDgkXdLMlTOjPrE-EL-9hmtzCBB-jBuN0YLF-g' is from your link.
-const GOOGLE_FORM_ACTION_URL = "https://docs.google.com/forms/u/0/d/e/1FAIpQLSddnVTbtmhTJDgkXdLMlTOjPrE-EL-9hmtzCBB-jBuN0YLF-g/formResponse";
+const GOOGLE_FORM_ACTION_URL = "https://docs.google.com/forms/d/e/1FAIpQLSddnVTbtmhTJDgkXdLMlTOjPrE-EL-9hmtzCBB-jBuN0YLF-g/formResponse";
 
 // 2. ENTRY ID FIX: You MUST inspect your Google Form to find these.
 // How to find them:
