@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     ChevronRight,
@@ -7,24 +7,18 @@ import {
     Package,
     Star,
     ShieldCheck,
-    CreditCard
+    CreditCard,
+    MapPin,
+    Truck,
+    Info
 } from 'lucide-react';
 import NavBar from '../components/Navbar';
 
 // ==========================================
-// CRITICAL CONFIGURATION - MUST UPDATE THESE
+// CONFIGURATION
 // ==========================================
-
-// 1. URL FIX: We changed '/viewform' to '/formResponse'
-// The ID '1FAIpQLSddnVTbtmhTJDgkXdLMlTOjPrE-EL-9hmtzCBB-jBuN0YLF-g' is from your link.
 const GOOGLE_FORM_ACTION_URL = "https://docs.google.com/forms/d/e/1FAIpQLSddnVTbtmhTJDgkXdLMlTOjPrE-EL-9hmtzCBB-jBuN0YLF-g/formResponse";
 
-// 2. ENTRY ID FIX: You MUST inspect your Google Form to find these.
-// How to find them:
-// 1. Open your Google Form in a browser.
-// 2. Right-click > "View Page Source".
-// 3. Ctrl+F (Find) and search for "entry."
-// 4. Map the numbers (e.g., entry.123456) to the fields below.
 const FORM_FIELDS = {
     EMAIL: "entry.1871437445",
     NAME: "entry.2100829503",
@@ -32,8 +26,82 @@ const FORM_FIELDS = {
     MAJOR: "entry.1836592500",
     PHONE: "entry.1399618403",
     SIZE: "entry.1533926266",
-    // Note: 'Payment' isn't usually a form field unless you have a specific question for it
+    PAYMENT_METHOD: "entry.1830317645",
+    AGREEMENT: "entry.1230404767",
 };
+
+const SIZES = ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+const MAJORS = ['ASEDS', 'ICCN', 'AMOA', 'DATA', 'SMART', 'SESNUM', 'CLOUD'];
+const YEARS = ['INE1', 'INE2', 'INE3', 'Master', 'Lauréat'];
+
+// ==========================================
+// UI COMPONENTS (Internal)
+// ==========================================
+
+const SectionHeader = ({ number, title, icon: Icon }) => (
+    <div className="flex items-center gap-3 mb-6 pb-2 border-b border-cyan-900/30">
+        <div className="flex items-center justify-center w-8 h-8 rounded bg-cyan-500/10 text-cyan-400 font-bold border border-cyan-500/20 shadow-[0_0_10px_rgba(6,182,212,0.1)]">
+            {number}
+        </div>
+        <h2 className="text-lg font-bold text-cyan-50 tracking-wide flex items-center gap-2">
+            {title}
+            {Icon && <Icon size={16} className="text-cyan-600" />}
+        </h2>
+    </div>
+);
+
+const InputField = ({ label, name, type = "text", value, onChange, placeholder, icon: Icon }) => (
+    <div className="space-y-2 group">
+        <label className="text-xs font-bold text-cyan-600 uppercase tracking-wider ml-1 group-focus-within:text-cyan-400 transition-colors">
+            {label}
+        </label>
+        <div className="relative">
+            <input
+                type={type}
+                name={name}
+                required
+                value={value}
+                onChange={onChange}
+                className="w-full p-3.5 bg-slate-900/60 border border-slate-800 rounded text-cyan-50 placeholder-slate-600 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 focus:bg-slate-900 outline-none transition-all duration-300 pl-10"
+                placeholder={placeholder}
+            />
+            {Icon && (
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-cyan-500 transition-colors">
+                    <Icon size={18} />
+                </div>
+            )}
+        </div>
+    </div>
+);
+
+const SelectField = ({ label, name, value, onChange, options, placeholder }) => (
+    <div className="space-y-2 group">
+        <label className="text-xs font-bold text-cyan-600 uppercase tracking-wider ml-1 group-focus-within:text-cyan-400 transition-colors">
+            {label}
+        </label>
+        <div className="relative">
+            <select
+                name={name}
+                required
+                value={value}
+                onChange={onChange}
+                className="w-full p-3.5 bg-slate-900/60 border border-slate-800 rounded text-cyan-50 appearance-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all cursor-pointer"
+            >
+                <option value="" className="bg-black text-slate-500">{placeholder}</option>
+                {options.map(opt => (
+                    <option key={opt} value={opt} className="bg-slate-900">{opt}</option>
+                ))}
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-cyan-600">
+                <ChevronRight size={16} className="rotate-90" />
+            </div>
+        </div>
+    </div>
+);
+
+// ==========================================
+// MAIN COMPONENT
+// ==========================================
 
 export default function OrderPage() {
     const navigate = useNavigate();
@@ -43,22 +111,23 @@ export default function OrderPage() {
         year: '',
         major: '',
         phone: '',
-        payment: '',
         size: '',
+        paymentMethod: '',
+        agreedToAdvance: false,
         rating: '0'
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState(null);
 
+    // Scroll to top on mount
+    useEffect(() => window.scrollTo(0, 0), []);
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleRatingChange = (rating) => {
-        setFormData({ ...formData, rating: String(rating) });
-    };
-
+    // EXACT TEXT MATCHING FOR GOOGLE FORMS
     const SIZE_MAPPING = {
         'S': 'S (Small)',
         'M': 'M (Medium)',
@@ -70,202 +139,185 @@ export default function OrderPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if(!formData.size) {
+            setError("Please select a size to continue.");
+            return;
+        }
+
+        if(!formData.paymentMethod) {
+            setError("Please select a payment method.");
+            return;
+        }
+
+        // Validate phone number: exactly 10 digits, no letters
+        const phoneRegex = /^\d{10}$/;
+        if(!phoneRegex.test(formData.phone)) {
+            setError("Phone number must be exactly 10 digits with no letters.");
+            return;
+        }
+
+        if(!formData.agreedToAdvance) {
+            setError("Please confirm the advance payment terms.");
+            return;
+        }
+
         setIsSubmitting(true);
         setError(null);
 
-        // Create the form data payload using URLSearchParams (standard for Google Forms)
         const formBody = new URLSearchParams();
-
-        // Map state data to Google Form Entry IDs
+        
+        // Append fields strictly matching Google Form expectations
         formBody.append(FORM_FIELDS.EMAIL, formData.email);
         formBody.append(FORM_FIELDS.NAME, formData.name);
         formBody.append(FORM_FIELDS.YEAR, formData.year);
         formBody.append(FORM_FIELDS.MAJOR, formData.major);
         formBody.append(FORM_FIELDS.PHONE, formData.phone);
-        // Map the size code (S, M, L) to the full string expected by Google Forms
+        // Map short size code (e.g., 'S') to full form string (e.g., 'S (Small)')
         formBody.append(FORM_FIELDS.SIZE, SIZE_MAPPING[formData.size] || formData.size);
+        // IMPORTANT: Must match form option casing exactly
+        formBody.append(FORM_FIELDS.PAYMENT_METHOD, formData.paymentMethod);
+        // IMPORTANT: Must match checkbox label exactly
+        formBody.append(FORM_FIELDS.AGREEMENT, "I agree to pay a 50 DH advance to confirm my order");
 
         try {
             await fetch(GOOGLE_FORM_ACTION_URL, {
                 method: 'POST',
                 body: formBody,
-                mode: 'no-cors'
+                mode: 'no-cors' // This hides the CORS error but also hides successful status
             });
-
-            setSubmitted(true);
-            window.scrollTo(0, 0);
+            // Since we use no-cors, we assume success if no network error occurred
+            setTimeout(() => {
+                setSubmitted(true);
+                window.scrollTo(0, 0);
+            }, 800);
         } catch (err) {
-            console.error("Form submission error:", err);
-            setError("Connection error. Please check your internet and try again.");
+            console.error("Submission error:", err);
+            setError("Connection failed. Please retry.");
         } finally {
-            setIsSubmitting(false);
+             if (!submitted) setIsSubmitting(false);
         }
     };
 
-    // --- SUCCESS STATE (Order Confirmation) ---
     if (submitted) {
         return (
-            <div className="min-h-screen bg-black font-mono text-cyan-400 selection:bg-cyan-500/30">
-                <div className="max-w-3xl mx-auto p-6 md:p-12">
-                    <div className="bg-black/50 border border-cyan-500/30 rounded-lg p-8 shadow-[0_0_20px_rgba(0,243,255,0.1)] relative overflow-hidden">
-                        {/* Decorative background element */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-
-                        <div className="flex items-center gap-3 text-cyan-400 mb-6">
-                            <CheckCircle size={32} className="drop-shadow-[0_0_10px_rgba(6,182,212,0.5)]" />
-                            <h2 className="text-2xl font-bold tracking-tight">ORDER SUBMITTED</h2>
-                        </div>
-                        <div className="bg-slate-900/50 p-4 rounded border border-cyan-500/20 mb-8 text-sm font-mono">
-                            <div className="font-bold text-cyan-100 mb-2 uppercase tracking-wider text-xs border-b border-cyan-500/20 pb-1">Delivery Vector</div>
-                            <div className="text-cyan-300/90 mt-2">{formData.name}</div>
-                            <div className="text-cyan-300/90">{formData.phone}</div>
-                            <div className="text-cyan-300/90">{formData.major} - {formData.year}</div>
-                        </div>
-
-                        <button
-                            onClick={() => navigate('/')}
-                            className="w-full md:w-auto px-8 py-3 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 rounded-sm shadow-[0_0_15px_rgba(6,182,212,0.2)] hover:shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all duration-300 font-bold tracking-widest text-xs uppercase"
-                        >
-                            Return to Base
-                        </button>
+            <div className="min-h-screen bg-[#050505] font-sans flex items-center justify-center p-4">
+                 <div className="max-w-md w-full bg-slate-900/50 border border-cyan-500/30 rounded-xl p-8 shadow-[0_0_50px_rgba(6,182,212,0.15)] relative overflow-hidden text-center">
+                    <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent left-0" />
+                    
+                    <div className="w-20 h-20 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_20px_rgba(6,182,212,0.2)]">
+                        <CheckCircle size={40} className="text-cyan-400" />
                     </div>
+                    
+                    <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Order Confirmed</h2>
+                    <p className="text-cyan-200/60 mb-8">Your request has been processed successfully.</p>
+                    
+                    <div className="bg-black/30 rounded-lg p-4 mb-8 text-left border border-slate-800">
+                        <div className="text-xs text-slate-500 uppercase font-bold mb-3 tracking-wider">Order Details</div>
+                        <div className="flex justify-between text-sm mb-1">
+                            <span className="text-slate-400">Recipient:</span>
+                            <span className="text-cyan-100 font-medium">{formData.name}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                            <span className="text-slate-400">Size:</span>
+                            <span className="text-cyan-100 font-medium">{formData.size}</span>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={() => navigate('/')}
+                        className="w-full py-3.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded font-bold transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] uppercase tracking-wide text-sm"
+                    >
+                        Return Home
+                    </button>
                 </div>
             </div>
         );
     }
 
-    // --- MAIN CHECKOUT PAGE ---
     return (
-        <div className="min-h-screen bg-[#050505] font-mono text-cyan-400 selection:bg-cyan-500/30 pb-12 relative overflow-x-hidden">
-            {/* Background Grid Effect */}
-            <div className="fixed inset-0 z-0 pointer-events-none opacity-20"
-                style={{
-                    backgroundImage: 'linear-gradient(rgba(0, 243, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 243, 255, 0.1) 1px, transparent 1px)',
-                    backgroundSize: '40px 40px'
-                }}
+        <div className="min-h-screen bg-[#09090b] text-slate-200 selection:bg-cyan-500/30 pb-20 relative font-sans">
+            {/* Background Texture */}
+            <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.03]" 
+                style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} 
             />
 
-            {/* Minimalist Checkout Header */}
             <NavBar />
 
-            <div className="max-w-6xl mx-auto px-4 pt-24 pb-8 relative z-10">
-                <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
+            <div className="max-w-7xl mx-auto px-4 pt-28 relative z-10">
+                
+                {/* Header Title */}
+                <div className="mb-10 text-center md:text-left border-b border-slate-800 pb-6">
+                    <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 tracking-tight">Secure Checkout</h1>
+                    <p className="text-slate-500">Complete your details to secure your CIT merchandise.</p>
+                </div>
 
-                    {/* LEFT COLUMN - FORM FIELDS */}
-                    <div className="lg:col-span-8 space-y-6">
-
-                        {/* 1. Delivery Address Section */}
-                        <div className="bg-black/40 backdrop-blur-sm rounded-lg border border-cyan-500/30 shadow-[0_0_15px_rgba(0,0,0,0.5)] overflow-hidden">
-                            <div className="flex items-center justify-between p-4 border-b border-cyan-500/20 bg-cyan-950/10">
-                                <h2 className="text-lg font-bold text-cyan-100 flex items-center gap-3">
-                                    <span className="flex items-center justify-center w-6 h-6 rounded-sm bg-cyan-500/20 text-cyan-400 text-xs border border-cyan-500/50">1</span>
-                                    SHIPPING ADDRESS
-                                </h2>
-                            </div>
-
-                            <div className="p-6 space-y-5">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-cyan-600 uppercase tracking-wider">Full name</label>
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        required
-                                        value={formData.name}
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+                    
+                    {/* LEFT COLUMN */}
+                    <div className="lg:col-span-8 space-y-8">
+                        
+                        {/* 1. SHIPPING DETAILS */}
+                        <section className="bg-slate-900/30 backdrop-blur-sm rounded-xl p-6 md:p-8 border border-slate-800/60 shadow-xl">
+                            <SectionHeader number="1" title="Personal Details" icon={MapPin} />
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="md:col-span-2">
+                                    <InputField 
+                                        label="Full Name" 
+                                        name="name" 
+                                        placeholder="" 
+                                        value={formData.name} 
                                         onChange={handleChange}
-                                        className="w-full p-3 bg-slate-900/50 border border-cyan-900/50 rounded-sm text-cyan-100 placeholder-cyan-900/50 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 focus:shadow-[0_0_15px_rgba(6,182,212,0.3)] outline-none transition-all"
-                                        placeholder="ENTER FULL NAME"
                                     />
                                 </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-cyan-600 uppercase tracking-wider">Phone number</label>
-                                    <input
-                                        type="tel"
-                                        name="phone"
-                                        required
-                                        value={formData.phone}
-                                        onChange={handleChange}
-                                        className="w-full p-3 bg-slate-900/50 border border-cyan-900/50 rounded-sm text-cyan-100 placeholder-cyan-900/50 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 focus:shadow-[0_0_15px_rgba(6,182,212,0.3)] outline-none transition-all"
-                                        placeholder="06 XX XX XX XX"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-cyan-600 uppercase tracking-wider">Email</label>
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        required
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                        className="w-full p-3 bg-slate-900/50 border border-cyan-900/50 rounded-sm text-cyan-100 placeholder-cyan-900/50 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 focus:shadow-[0_0_15px_rgba(6,182,212,0.3)] outline-none transition-all"
-                                        placeholder="name@example.com"
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-cyan-600 uppercase tracking-wider">Major</label>
-                                        <div className="relative">
-                                            <select
-                                                name="major"
-                                                required
-                                                value={formData.major}
-                                                onChange={handleChange}
-                                                className="w-full p-3 bg-slate-900/50 border border-cyan-900/50 rounded-sm text-cyan-100 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 outline-none appearance-none"
-                                            >
-                                                <option value="" className="bg-black text-gray-500">SELECT MAJOR</option>
-                                                <option value="ASEDS" className="bg-slate-900">ASEDS</option>
-                                                <option value="ICCN" className="bg-slate-900">ICCN</option>
-                                                <option value="AMOA" className="bg-slate-900">AMOA</option>
-                                                <option value="DATA" className="bg-slate-900">DATA</option>
-                                                <option value="SMART" className="bg-slate-900">SMART</option>
-                                                <option value="SESNUM" className="bg-slate-900">SESNUM</option>
-                                                <option value="CLOUD" className="bg-slate-900">CLOUD</option>
-                                            </select>
-                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-cyan-600">
-                                                <ChevronRight size={16} className="rotate-90" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-cyan-600 uppercase tracking-wider">Year</label>
-                                        <div className="relative">
-                                            <select
-                                                name="year"
-                                                required
-                                                value={formData.year}
-                                                onChange={handleChange}
-                                                className="w-full p-3 bg-slate-900/50 border border-cyan-900/50 rounded-sm text-cyan-100 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 outline-none appearance-none"
-                                            >
-                                                <option value="" className="bg-black text-gray-500">SELECT YEAR</option>
-                                                <option value="INE1" className="bg-slate-900">INE1</option>
-                                                <option value="INE2" className="bg-slate-900">INE2</option>
-                                                <option value="INE3" className="bg-slate-900">INE3</option>
-                                                <option value="Master" className="bg-slate-900">Master</option>
-                                                <option value="Lauréat" className="bg-slate-900">Lauréat</option>
-                                            </select>
-                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-cyan-600">
-                                                <ChevronRight size={16} className="rotate-90" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <InputField 
+                                    label="Email Address" 
+                                    name="email" 
+                                    type="email" 
+                                    placeholder="student@inpt.ac.ma" 
+                                    value={formData.email} 
+                                    onChange={handleChange}
+                                />
+                                <InputField 
+                                    label="Phone Number" 
+                                    name="phone" 
+                                    type="tel" 
+                                    placeholder="06 XX XX XX XX" 
+                                    value={formData.phone} 
+                                    onChange={handleChange}
+                                />
+                                <SelectField 
+                                    label="Major" 
+                                    name="major" 
+                                    value={formData.major} 
+                                    onChange={handleChange} 
+                                    options={MAJORS} 
+                                    placeholder="Select Major" 
+                                />
+                                <SelectField 
+                                    label="Academic Year" 
+                                    name="year" 
+                                    value={formData.year} 
+                                    onChange={handleChange} 
+                                    options={YEARS} 
+                                    placeholder="Select Year" 
+                                />
                             </div>
-                        </div>
+                        </section>
 
-                        {/* 2. Product Options Section */}
-                        <div className="bg-black/40 backdrop-blur-sm rounded-lg border border-cyan-500/30 shadow-[0_0_15px_rgba(0,0,0,0.5)] overflow-hidden">
-                            <div className="flex items-center justify-between p-4 border-b border-cyan-500/20 bg-cyan-950/10">
-                                <h2 className="text-lg font-bold text-cyan-100 flex items-center gap-3">
-                                    <span className="flex items-center justify-center w-6 h-6 rounded-sm bg-cyan-500/20 text-cyan-400 text-xs border border-cyan-500/50">2</span>
-                                    ITEM CONFIGURATION
-                                </h2>
-                            </div>
-                            <div className="p-6">
-                                <label className="text-xs font-bold text-cyan-600 uppercase tracking-wider mb-3 block">Select Size:</label>
-                                <div className="flex flex-wrap gap-3">
-                                    {['S', 'M', 'L', 'XL', 'XXL', 'XXXL'].map((size) => (
+                        {/* 2. ITEM CONFIGURATION */}
+                        <section className="bg-slate-900/30 backdrop-blur-sm rounded-xl p-6 md:p-8 border border-slate-800/60 shadow-xl">
+                            <SectionHeader number="2" title="Configuration" icon={Package} />
+                            
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <label className="text-xs font-bold text-cyan-600 uppercase tracking-wider ml-1">Select Size</label>
+                                    <span className="text-xs text-slate-500">Unsure? Size up for relaxed fit.</span>
+                                </div>
+                                
+                                <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+                                    {SIZES.map((size) => (
                                         <label key={size} className="cursor-pointer relative group">
                                             <input
                                                 type="radio"
@@ -275,164 +327,193 @@ export default function OrderPage() {
                                                 onChange={handleChange}
                                                 className="hidden peer"
                                             />
-                                            <div className="w-14 h-12 flex items-center justify-center border border-cyan-900/50 rounded-sm bg-slate-900/50 text-cyan-500/70 text-sm font-medium 
-                                                          group-hover:border-cyan-500/50 group-hover:text-cyan-400 group-hover:shadow-[0_0_10px_rgba(6,182,212,0.2)]
-                                                          peer-checked:bg-cyan-500/20 peer-checked:border-cyan-400 peer-checked:text-cyan-300 peer-checked:font-bold peer-checked:shadow-[0_0_15px_rgba(6,182,212,0.4)]
-                                                          transition-all duration-200">
+                                            <div className="h-14 flex items-center justify-center rounded border border-slate-700 bg-slate-800/50 text-slate-400 font-medium 
+                                                          hover:border-cyan-500/50 hover:bg-slate-800 hover:text-cyan-400 transition-all duration-200
+                                                          peer-checked:bg-cyan-600 peer-checked:border-cyan-500 peer-checked:text-white peer-checked:font-bold peer-checked:shadow-[0_0_15px_rgba(6,182,212,0.4)]">
                                                 {size}
                                             </div>
                                         </label>
                                     ))}
                                 </div>
+                                {formData.size && (
+                                    <div className="text-center text-sm text-cyan-400 font-medium animate-pulse mt-2">
+                                        Selected: {SIZE_MAPPING[formData.size]}
+                                    </div>
+                                )}
                             </div>
-                        </div>
+                        </section>
 
-                        {/* 3. Payment Section */}
-                        <div className="bg-black/40 backdrop-blur-sm rounded-lg border border-cyan-500/30 shadow-[0_0_15px_rgba(0,0,0,0.5)] overflow-hidden">
-                            <div className="flex items-center justify-between p-4 border-b border-cyan-500/20 bg-cyan-950/10">
-                                <h2 className="text-lg font-bold text-cyan-100 flex items-center gap-3">
-                                    <span className="flex items-center justify-center w-6 h-6 rounded-sm bg-cyan-500/20 text-cyan-400 text-xs border border-cyan-500/50">3</span>
-                                    PAYMENT METHOD
-                                </h2>
-                            </div>
-                            <div className="p-6 space-y-3">
-                                <div className="border border-cyan-500/50 bg-cyan-500/5 rounded-sm p-4 flex items-start gap-3 shadow-[0_0_10px_rgba(6,182,212,0.1)]">
-                                    <input
-                                        type="radio"
-                                        checked={true}
-                                        readOnly
-                                        className="mt-1 h-4 w-4 accent-cyan-500 bg-transparent border-cyan-500"
+                        {/* 3. PAYMENT */}
+                        <section className="bg-slate-900/30 backdrop-blur-sm rounded-xl p-6 md:p-8 border border-slate-800/60 shadow-xl">
+                            <SectionHeader number="3" title="Payment Method" icon={CreditCard} />
+                            
+                            <div className="space-y-3">
+                                <label className={`flex items-start gap-4 p-4 border rounded-lg cursor-pointer transition-all ${
+                                    formData.paymentMethod === 'Cash On Delivery' 
+                                    ? 'border-cyan-500/40 bg-cyan-950/20 hover:bg-cyan-950/30' 
+                                    : 'border-slate-700 bg-slate-800/30 hover:bg-slate-800/50'
+                                }`}>
+                                    <input 
+                                        type="radio" 
+                                        name="paymentMethod"
+                                        value="Cash On Delivery" // FIXED: Was "Cash on delivery", must match Form exactly
+                                        checked={formData.paymentMethod === 'Cash On Delivery'}
+                                        onChange={handleChange}
+                                        className="mt-1 w-4 h-4 text-cyan-500 accent-cyan-500" 
                                     />
                                     <div>
-                                        <div className="font-bold text-sm text-cyan-100">Cash on Delivery</div>
-                                        <div className="text-xs text-cyan-400/70 mt-1">Payment required upon physical receipt at campus location.</div>
+                                        <div className="font-bold text-cyan-100 text-sm">Cash on Delivery</div>
+                                        <div className="text-xs text-cyan-200/60 mt-1">Pay 50 DH advance now, rest on pickup at CIT HQ.</div>
                                     </div>
-                                </div>
-                                <div className="opacity-40 pointer-events-none border border-cyan-900/30 rounded-sm p-4 flex items-start gap-3 grayscale">
-                                    <input type="radio" disabled className="mt-1 h-4 w-4" />
-                                    <div>
-                                        <div className="font-bold text-sm text-gray-400 flex items-center gap-2">
-                                            Digital Transaction <span className="text-[9px] bg-gray-800 text-gray-400 px-1 rounded border border-gray-700">OFFLINE</span>
-                                        </div>
-                                        <div className="flex gap-2 mt-1">
-                                            <CreditCard size={16} className="text-gray-600" />
-                                        </div>
+                                </label>
+                                
+                                <label className={`flex items-start gap-4 p-4 border rounded-lg cursor-pointer transition-all ${
+                                    formData.paymentMethod === 'Wire transfer' 
+                                    ? 'border-cyan-500/40 bg-cyan-950/20 hover:bg-cyan-950/30' 
+                                    : 'border-slate-700 bg-slate-800/30 hover:bg-slate-800/50'
+                                }`}>
+                                    <input 
+                                        type="radio" 
+                                        name="paymentMethod"
+                                        value="Wire transfer"
+                                        checked={formData.paymentMethod === 'Wire transfer'}
+                                        onChange={handleChange}
+                                        className="mt-1 w-4 h-4 text-cyan-500 accent-cyan-500" 
+                                    />
+                                    <div className="flex-1">
+                                        <div className="font-bold text-cyan-100 text-sm">Wire Transfer</div>
+                                        <div className="text-xs text-cyan-200/60 mt-1">Transfer 50 DH advance, pay rest on pickup.</div>
+                                        {formData.paymentMethod === 'Wire transfer' && (
+                                            <div className="mt-3 p-3 bg-slate-950/50 rounded border border-cyan-500/20">
+                                                <div className="text-xs text-slate-400 mb-1.5">Transfer to:</div>
+                                                <div className="font-mono text-cyan-300 text-sm font-bold tracking-wider">
+                                                    230 107 1111204002703683 47
+                                                </div>
+                                                <div className="text-[10px] text-slate-500 mt-1"> Bank Of Africa</div>
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
+                                </label>
                             </div>
-                        </div>
 
-                        {/* 4. Feedback / Rating (Optional) */}
-                        <div className="bg-black/40 backdrop-blur-sm rounded-lg border border-cyan-500/30 shadow-[0_0_15px_rgba(0,0,0,0.5)] p-6">
-                            <h3 className="text-xs font-bold text-cyan-600 uppercase tracking-wider mb-3">Hype Level</h3>
-                            <div className="flex gap-2">
+                            {/* Advance Payment Confirmation */}
+                            <div className="mt-6 pt-6 border-t border-slate-800">
+                                <label className="flex items-start gap-3 cursor-pointer group">
+                                    <input
+                                        type="checkbox"
+                                        name="agreedToAdvance"
+                                        checked={formData.agreedToAdvance}
+                                        onChange={(e) => setFormData({...formData, agreedToAdvance: e.target.checked})}
+                                        className="mt-1 w-5 h-5 text-cyan-500 accent-cyan-500 rounded border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:ring-offset-0 bg-slate-800"
+                                    />
+                                    <div className="flex-1">
+                                        <div className="text-sm text-cyan-100 font-medium group-hover:text-cyan-300 transition-colors">
+                                            I agree to pay a 50 DH advance to confirm my order
+                                        </div>
+                                        <div className="text-xs text-slate-400 mt-1 leading-relaxed">
+                                            The remaining 150 DH will be paid when collecting the hoodie at the CIT stand on campus.
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </section>
+
+                        {/* RATING */}
+                         <div className="bg-transparent p-4 flex items-center gap-4 opacity-70 hover:opacity-100 transition-opacity">
+                            <span className="text-xs font-bold text-slate-500 uppercase">Hype Level:</span>
+                            <div className="flex gap-1">
                                 {[1, 2, 3, 4, 5].map((star) => (
-                                    <button
-                                        key={star}
-                                        type="button"
-                                        onClick={() => handleRatingChange(star)}
-                                        className="focus:outline-none group"
-                                    >
-                                        <Star
-                                            size={24}
-                                            fill={Number(formData.rating) >= star ? "#06b6d4" : "none"}
-                                            color={Number(formData.rating) >= star ? "#06b6d4" : "#1e293b"}
-                                            className="transition-all duration-200 group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]"
+                                    <button key={star} type="button" onClick={() => setFormData({...formData, rating: String(star)})}>
+                                        <Star size={20} 
+                                            className={`transition-all ${Number(formData.rating) >= star ? "fill-cyan-500 text-cyan-500" : "text-slate-700"}`} 
                                         />
                                     </button>
                                 ))}
                             </div>
                         </div>
+
                     </div>
 
-                    {/* RIGHT COLUMN - ORDER SUMMARY (Sticky) */}
+                    {/* RIGHT COLUMN - SUMMARY */}
                     <div className="lg:col-span-4">
-                        <div className="sticky top-24 space-y-6">
-
-                            {/* Place Order Box */}
-                            <div className="bg-black/80 backdrop-blur-md border border-cyan-500/50 rounded-lg p-5 shadow-[0_0_30px_rgba(0,243,255,0.15)] relative overflow-hidden">
-                                {/* Animated border gradient effect could go here */}
-
-                                <button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="w-full bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-400/60 py-3 rounded-sm shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_25px_rgba(6,182,212,0.5)] text-sm font-bold tracking-widest uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed mb-4 transition-all duration-300"
-                                >
-                                    {isSubmitting ? 'PROCESSING...' : 'ORDER'}
-                                </button>
-
-                                <p className="text-[10px] text-center text-cyan-700/60 mb-4 px-2 font-mono">
-                                    By executing this command, you agree to the <span className="text-cyan-500 underline cursor-pointer">Protocols</span> and <span className="text-cyan-500 underline cursor-pointer">Data Policy</span>.
-                                </p>
-
-                                <div className="border-t border-cyan-900/50 pt-4 space-y-2">
-                                    <h3 className="font-bold text-lg text-cyan-100">Summary</h3>
-
-                                    <div className="flex justify-between text-sm text-cyan-400/80">
-                                        <span>Item (1):</span>
-                                        <span className="font-mono">250.00 DH</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm text-cyan-400/80">
-                                        <span>Shipping:</span>
-                                        <span className="font-mono">0.00 DH</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm text-cyan-400/80">
-                                        <span>Promotion:</span>
-                                        <span className="text-red-400 font-mono">-28%</span>
-                                    </div>
-
-                                    <div className="border-t border-cyan-900/50 my-2 pt-2 flex justify-between items-center">
-                                        <span className="font-bold text-lg text-cyan-100">Total:</span>
-                                        <span className="font-bold text-xl text-cyan-300 drop-shadow-[0_0_10px_rgba(6,182,212,0.5)] font-mono">180.00 DH</span>
-                                    </div>
-                                </div>
-
-                                <div className="bg-cyan-950/20 rounded p-3 mt-4 text-[10px] text-cyan-600/80 flex gap-2 border border-cyan-900/30">
-                                    <ShieldCheck size={14} className="text-cyan-500 shrink-0" />
-                                    <span>Encrypted transaction. No payment data stored on local servers.</span>
-                                </div>
-                            </div>
-
-                            {/* Item in Cart Preview */}
-                            <div className="bg-black/40 border border-cyan-500/30 rounded-lg p-5 shadow-sm">
-                                <h3 className="font-bold text-cyan-600 text-xs uppercase tracking-wider mb-3">Manifest</h3>
-                                <div className="flex gap-4">
-                                    {/* Placeholder Image */}
-                                    <div className="w-16 h-16 bg-slate-900 rounded border border-cyan-900/50 flex items-center justify-center shrink-0">
-                                        <Package className="text-cyan-700" />
+                        <div className="sticky top-28">
+                            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-2xl relative">
+                                {/* Product Preview */}
+                                <div className="p-6 bg-slate-950/50 border-b border-slate-800 flex gap-4 items-center">
+                                    <div className="w-20 h-20 bg-slate-800 rounded-lg flex items-center justify-center text-slate-600 border border-slate-700">
+                                        <Package size={32} />
                                     </div>
                                     <div>
-                                        <div className="font-bold text-sm text-cyan-100 leading-snug">
-                                            CIT HOODIE V2026
+                                        <h3 className="font-bold text-white text-sm">CIT HOODIE V2026</h3>
+                                        <p className="text-xs text-emerald-400 font-mono mt-1 flex items-center gap-1">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"/> IN STOCK
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Totals */}
+                                <div className="p-6 space-y-4">
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between text-slate-400">
+                                            <span>Subtotal</span>
+                                            <span>250.00 DH</span>
                                         </div>
-                                        <div className="text-[10px] text-green-500 font-bold mt-1 uppercase tracking-wider">Stock_Available</div>
-                                        <div className="text-xs text-cyan-500/70 mt-1">Size: <span className="font-bold text-cyan-300">{formData.size}</span></div>
+                                        <div className="flex justify-between text-slate-400">
+                                            <span>Shipping</span>
+                                            <span className="text-cyan-400">FREE</span>
+                                        </div>
+                                        <div className="flex justify-between text-emerald-400/80">
+                                            <span>Student Discount</span>
+                                            <span>-20%</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="border-t border-slate-800 pt-4 mt-4 space-y-2">
+                                        <div className="flex justify-between items-end">
+                                            <span className="text-slate-200 font-bold">Total</span>
+                                            <span className="text-2xl font-bold text-cyan-400 font-mono">200.00 DH</span>
+                                        </div>
+                                        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 mt-3">
+                                            <div className="flex items-start gap-2">
+                                                <Info size={14} className="text-amber-400 mt-0.5 flex-shrink-0" />
+                                                <div className="text-xs text-amber-200/90">
+                                                    <span className="font-bold">Advance: 50 DH</span> · Balance on pickup: 150 DH
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                        className="w-full bg-cyan-500 hover:bg-cyan-400 text-black font-bold py-4 rounded-lg shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:shadow-[0_0_30px_rgba(6,182,212,0.6)] transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    >
+                                        {isSubmitting ? (
+                                            <>Processing...</>
+                                        ) : (
+                                            <>PLACE ORDER <ChevronRight size={18} className="stroke-[3px]" /></>
+                                        )}
+                                    </button>
+                                    
+                                    <div className="flex items-center justify-center gap-2 text-[10px] text-slate-500 mt-4">
+                                        <ShieldCheck size={12} />
+                                        <span>Secure SSL Encryption</span>
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
+
                 </form>
 
+                {/* Error Toast */}
                 {error && (
-                    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-red-950/90 border border-red-500 text-red-200 px-6 py-4 rounded-lg shadow-[0_0_30px_rgba(239,68,68,0.4)] flex items-center gap-3 animate-slide-up z-50 backdrop-blur-md">
-                        <AlertCircle size={20} className="text-red-500" />
-                        <span className="font-mono text-sm">{error}</span>
+                    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-red-900/90 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-3 backdrop-blur-md z-50 animate-bounce">
+                        <AlertCircle size={18} />
+                        <span className="text-sm font-medium">{error}</span>
                     </div>
                 )}
             </div>
-
-            {/* Simple Footer */}
-            <footer className="border-t border-cyan-900/30 mt-12 bg-black/80 py-8">
-                <div className="text-center text-xs text-cyan-800/50 space-y-2 font-mono">
-                    <p>© 2026 CIT SYSTEMS. ALL RIGHTS RESERVED.</p>
-                    <div className="space-x-4 text-cyan-700/70">
-                        <a href="#" className="hover:text-cyan-400 transition-colors">PRIVACY PROTOCOL</a>
-                        <a href="#" className="hover:text-cyan-400 transition-colors">TERMS OF ENGAGEMENT</a>
-                    </div>
-                </div>
-            </footer>
         </div>
     );
 }
