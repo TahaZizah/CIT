@@ -9,7 +9,7 @@ import {
     ShieldCheck,
     CreditCard
 } from 'lucide-react';
-import NavBar from '../components/NavBar';
+import NavBar from '../components/Navbar';
 
 // ==========================================
 // CRITICAL CONFIGURATION - MUST UPDATE THESE

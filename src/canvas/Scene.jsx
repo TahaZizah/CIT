@@ -26,6 +26,8 @@ export default function Scene() {
                     enableDamping={true}
                     dampingFactor={0.05}
                     rotateSpeed={0.5}
+                    autoRotate={true}
+                    autoRotateSpeed={5}
                 />
             </Canvas>
         </div>

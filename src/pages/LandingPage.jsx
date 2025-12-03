@@ -60,7 +60,7 @@ export default function LandingPage() {
                 </div>
 
                 {/* Foreground Content (CTA) */}
-                <div className="absolute bottom-20 left-0 right-0 z-20 flex flex-col items-center pointer-events-none">
+                <div className="absolute bottom-5 left-0 right-0 z-20 flex flex-col items-center pointer-events-none">
                     <div className="pointer-events-auto">
                         <Button onClick={() => navigate('/order')} className="border-2 border-blue-500 bg-black/50 hover:bg-blue-500 hover:text-black text-black shadow-[0_0_20px_rgba(0,243,255,0.3)]">
                             INITIATE ORDER
