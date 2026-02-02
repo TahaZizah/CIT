@@ -139,25 +139,25 @@ export default function OrderPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        if(!formData.size) {
+
+        if (!formData.size) {
             setError("Please select a size to continue.");
             return;
         }
 
-        if(!formData.paymentMethod) {
+        if (!formData.paymentMethod) {
             setError("Please select a payment method.");
             return;
         }
 
         // Validate phone number: exactly 10 digits, no letters
         const phoneRegex = /^\d{10}$/;
-        if(!phoneRegex.test(formData.phone)) {
+        if (!phoneRegex.test(formData.phone)) {
             setError("Phone number must be exactly 10 digits with no letters.");
             return;
         }
 
-        if(!formData.agreedToAdvance) {
+        if (!formData.agreedToAdvance) {
             setError("Please confirm the advance payment terms.");
             return;
         }
@@ -166,7 +166,7 @@ export default function OrderPage() {
         setError(null);
 
         const formBody = new URLSearchParams();
-        
+
         // Append fields strictly matching Google Form expectations
         formBody.append(FORM_FIELDS.EMAIL, formData.email);
         formBody.append(FORM_FIELDS.NAME, formData.name);
@@ -195,23 +195,23 @@ export default function OrderPage() {
             console.error("Submission error:", err);
             setError("Connection failed. Please retry.");
         } finally {
-             if (!submitted) setIsSubmitting(false);
+            if (!submitted) setIsSubmitting(false);
         }
     };
 
     if (submitted) {
         return (
             <div className="min-h-screen bg-[#050505] font-sans flex items-center justify-center p-4">
-                 <div className="max-w-md w-full bg-slate-900/50 border border-cyan-500/30 rounded-xl p-8 shadow-[0_0_50px_rgba(6,182,212,0.15)] relative overflow-hidden text-center">
+                <div className="max-w-md w-full bg-slate-900/50 border border-cyan-500/30 rounded-xl p-8 shadow-[0_0_50px_rgba(6,182,212,0.15)] relative overflow-hidden text-center">
                     <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent left-0" />
-                    
+
                     <div className="w-20 h-20 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_20px_rgba(6,182,212,0.2)]">
                         <CheckCircle size={40} className="text-cyan-400" />
                     </div>
-                    
+
                     <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Order Confirmed</h2>
                     <p className="text-cyan-200/60 mb-8">Your request has been processed successfully.</p>
-                    
+
                     <div className="bg-black/30 rounded-lg p-4 mb-8 text-left border border-slate-800">
                         <div className="text-xs text-slate-500 uppercase font-bold mb-3 tracking-wider">Order Details</div>
                         <div className="flex justify-between text-sm mb-1">
@@ -238,14 +238,14 @@ export default function OrderPage() {
     return (
         <div className="min-h-screen bg-[#09090b] text-slate-200 selection:bg-cyan-500/30 pb-20 relative font-sans">
             {/* Background Texture */}
-            <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.03]" 
-                style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} 
+            <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.03]"
+                style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}
             />
 
             <NavBar />
 
             <div className="max-w-7xl mx-auto px-4 pt-28 relative z-10">
-                
+
                 {/* Header Title */}
                 <div className="mb-10 text-center md:text-left border-b border-slate-800 pb-6">
                     <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 tracking-tight">Secure Checkout</h1>
@@ -253,55 +253,55 @@ export default function OrderPage() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-                    
+
                     {/* LEFT COLUMN */}
                     <div className="lg:col-span-8 space-y-8">
-                        
+
                         {/* 1. SHIPPING DETAILS */}
                         <section className="bg-slate-900/30 backdrop-blur-sm rounded-xl p-6 md:p-8 border border-slate-800/60 shadow-xl">
                             <SectionHeader number="1" title="Personal Details" icon={MapPin} />
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="md:col-span-2">
-                                    <InputField 
-                                        label="Full Name" 
-                                        name="name" 
-                                        placeholder="" 
-                                        value={formData.name} 
+                                    <InputField
+                                        label="Full Name"
+                                        name="name"
+                                        placeholder=""
+                                        value={formData.name}
                                         onChange={handleChange}
                                     />
                                 </div>
-                                <InputField 
-                                    label="Email Address" 
-                                    name="email" 
-                                    type="email" 
-                                    placeholder="student@inpt.ac.ma" 
-                                    value={formData.email} 
+                                <InputField
+                                    label="Email Address"
+                                    name="email"
+                                    type="email"
+                                    placeholder="student@inpt.ac.ma"
+                                    value={formData.email}
                                     onChange={handleChange}
                                 />
-                                <InputField 
-                                    label="Phone Number" 
-                                    name="phone" 
-                                    type="tel" 
-                                    placeholder="06 XX XX XX XX" 
-                                    value={formData.phone} 
+                                <InputField
+                                    label="Phone Number"
+                                    name="phone"
+                                    type="tel"
+                                    placeholder="06 XX XX XX XX"
+                                    value={formData.phone}
                                     onChange={handleChange}
                                 />
-                                <SelectField 
-                                    label="Major" 
-                                    name="major" 
-                                    value={formData.major} 
-                                    onChange={handleChange} 
-                                    options={MAJORS} 
-                                    placeholder="Select Major" 
+                                <SelectField
+                                    label="Major"
+                                    name="major"
+                                    value={formData.major}
+                                    onChange={handleChange}
+                                    options={MAJORS}
+                                    placeholder="Select Major"
                                 />
-                                <SelectField 
-                                    label="Academic Year" 
-                                    name="year" 
-                                    value={formData.year} 
-                                    onChange={handleChange} 
-                                    options={YEARS} 
-                                    placeholder="Select Year" 
+                                <SelectField
+                                    label="Academic Year"
+                                    name="year"
+                                    value={formData.year}
+                                    onChange={handleChange}
+                                    options={YEARS}
+                                    placeholder="Select Year"
                                 />
                             </div>
                         </section>
@@ -309,13 +309,13 @@ export default function OrderPage() {
                         {/* 2. ITEM CONFIGURATION */}
                         <section className="bg-slate-900/30 backdrop-blur-sm rounded-xl p-6 md:p-8 border border-slate-800/60 shadow-xl">
                             <SectionHeader number="2" title="Configuration" icon={Package} />
-                            
+
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center">
                                     <label className="text-xs font-bold text-cyan-600 uppercase tracking-wider ml-1">Select Size</label>
                                     <span className="text-xs text-slate-500">Unsure? Size up for relaxed fit.</span>
                                 </div>
-                                
+
                                 <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
                                     {SIZES.map((size) => (
                                         <label key={size} className="cursor-pointer relative group">
@@ -346,39 +346,37 @@ export default function OrderPage() {
                         {/* 3. PAYMENT */}
                         <section className="bg-slate-900/30 backdrop-blur-sm rounded-xl p-6 md:p-8 border border-slate-800/60 shadow-xl">
                             <SectionHeader number="3" title="Payment Method" icon={CreditCard} />
-                            
+
                             <div className="space-y-3">
-                                <label className={`flex items-start gap-4 p-4 border rounded-lg cursor-pointer transition-all ${
-                                    formData.paymentMethod === 'Cash On Delivery' 
-                                    ? 'border-cyan-500/40 bg-cyan-950/20 hover:bg-cyan-950/30' 
-                                    : 'border-slate-700 bg-slate-800/30 hover:bg-slate-800/50'
-                                }`}>
-                                    <input 
-                                        type="radio" 
+                                <label className={`flex items-start gap-4 p-4 border rounded-lg cursor-pointer transition-all ${formData.paymentMethod === 'Cash On Delivery'
+                                        ? 'border-cyan-500/40 bg-cyan-950/20 hover:bg-cyan-950/30'
+                                        : 'border-slate-700 bg-slate-800/30 hover:bg-slate-800/50'
+                                    }`}>
+                                    <input
+                                        type="radio"
                                         name="paymentMethod"
                                         value="Cash On Delivery" // FIXED: Was "Cash on delivery", must match Form exactly
                                         checked={formData.paymentMethod === 'Cash On Delivery'}
                                         onChange={handleChange}
-                                        className="mt-1 w-4 h-4 text-cyan-500 accent-cyan-500" 
+                                        className="mt-1 w-4 h-4 text-cyan-500 accent-cyan-500"
                                     />
                                     <div>
                                         <div className="font-bold text-cyan-100 text-sm">Cash on Delivery</div>
                                         <div className="text-xs text-cyan-200/60 mt-1">Pay 50 DH advance now, rest on pickup at CIT HQ.</div>
                                     </div>
                                 </label>
-                                
-                                <label className={`flex items-start gap-4 p-4 border rounded-lg cursor-pointer transition-all ${
-                                    formData.paymentMethod === 'Wire transfer' 
-                                    ? 'border-cyan-500/40 bg-cyan-950/20 hover:bg-cyan-950/30' 
-                                    : 'border-slate-700 bg-slate-800/30 hover:bg-slate-800/50'
-                                }`}>
-                                    <input 
-                                        type="radio" 
+
+                                <label className={`flex items-start gap-4 p-4 border rounded-lg cursor-pointer transition-all ${formData.paymentMethod === 'Wire transfer'
+                                        ? 'border-cyan-500/40 bg-cyan-950/20 hover:bg-cyan-950/30'
+                                        : 'border-slate-700 bg-slate-800/30 hover:bg-slate-800/50'
+                                    }`}>
+                                    <input
+                                        type="radio"
                                         name="paymentMethod"
                                         value="Wire transfer"
                                         checked={formData.paymentMethod === 'Wire transfer'}
                                         onChange={handleChange}
-                                        className="mt-1 w-4 h-4 text-cyan-500 accent-cyan-500" 
+                                        className="mt-1 w-4 h-4 text-cyan-500 accent-cyan-500"
                                     />
                                     <div className="flex-1">
                                         <div className="font-bold text-cyan-100 text-sm">Wire Transfer</div>
@@ -403,7 +401,7 @@ export default function OrderPage() {
                                         type="checkbox"
                                         name="agreedToAdvance"
                                         checked={formData.agreedToAdvance}
-                                        onChange={(e) => setFormData({...formData, agreedToAdvance: e.target.checked})}
+                                        onChange={(e) => setFormData({ ...formData, agreedToAdvance: e.target.checked })}
                                         className="mt-1 w-5 h-5 text-cyan-500 accent-cyan-500 rounded border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:ring-offset-0 bg-slate-800"
                                     />
                                     <div className="flex-1">
@@ -411,7 +409,7 @@ export default function OrderPage() {
                                             I agree to pay a 50 DH advance to confirm my order
                                         </div>
                                         <div className="text-xs text-slate-400 mt-1 leading-relaxed">
-                                            The remaining 150 DH will be paid when collecting the hoodie at the CIT stand on campus.
+                                            The remaining 130 DH will be paid when collecting the hoodie at the CIT stand on campus.
                                         </div>
                                     </div>
                                 </label>
@@ -419,13 +417,13 @@ export default function OrderPage() {
                         </section>
 
                         {/* RATING */}
-                         <div className="bg-transparent p-4 flex items-center gap-4 opacity-70 hover:opacity-100 transition-opacity">
+                        <div className="bg-transparent p-4 flex items-center gap-4 opacity-70 hover:opacity-100 transition-opacity">
                             <span className="text-xs font-bold text-slate-500 uppercase">Hype Level:</span>
                             <div className="flex gap-1">
                                 {[1, 2, 3, 4, 5].map((star) => (
-                                    <button key={star} type="button" onClick={() => setFormData({...formData, rating: String(star)})}>
-                                        <Star size={20} 
-                                            className={`transition-all ${Number(formData.rating) >= star ? "fill-cyan-500 text-cyan-500" : "text-slate-700"}`} 
+                                    <button key={star} type="button" onClick={() => setFormData({ ...formData, rating: String(star) })}>
+                                        <Star size={20}
+                                            className={`transition-all ${Number(formData.rating) >= star ? "fill-cyan-500 text-cyan-500" : "text-slate-700"}`}
                                         />
                                     </button>
                                 ))}
@@ -446,7 +444,7 @@ export default function OrderPage() {
                                     <div>
                                         <h3 className="font-bold text-white text-sm">CIT HOODIE V2026</h3>
                                         <p className="text-xs text-emerald-400 font-mono mt-1 flex items-center gap-1">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"/> IN STOCK
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> IN STOCK
                                         </p>
                                     </div>
                                 </div>
@@ -456,7 +454,7 @@ export default function OrderPage() {
                                     <div className="space-y-2 text-sm">
                                         <div className="flex justify-between text-slate-400">
                                             <span>Subtotal</span>
-                                            <span>250.00 DH</span>
+                                            <span>225.00 DH</span>
                                         </div>
                                         <div className="flex justify-between text-slate-400">
                                             <span>Shipping</span>
@@ -471,13 +469,13 @@ export default function OrderPage() {
                                     <div className="border-t border-slate-800 pt-4 mt-4 space-y-2">
                                         <div className="flex justify-between items-end">
                                             <span className="text-slate-200 font-bold">Total</span>
-                                            <span className="text-2xl font-bold text-cyan-400 font-mono">200.00 DH</span>
+                                            <span className="text-2xl font-bold text-cyan-400 font-mono">180.00 DH</span>
                                         </div>
                                         <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 mt-3">
                                             <div className="flex items-start gap-2">
                                                 <Info size={14} className="text-amber-400 mt-0.5 flex-shrink-0" />
                                                 <div className="text-xs text-amber-200/90">
-                                                    <span className="font-bold">Advance: 50 DH</span> · Balance on pickup: 150 DH
+                                                    <span className="font-bold">Advance: 50 DH</span> · Balance on pickup: 130 DH
                                                 </div>
                                             </div>
                                         </div>
@@ -494,7 +492,7 @@ export default function OrderPage() {
                                             <>PLACE ORDER <ChevronRight size={18} className="stroke-[3px]" /></>
                                         )}
                                     </button>
-                                    
+
                                     <div className="flex items-center justify-center gap-2 text-[10px] text-slate-500 mt-4">
                                         <ShieldCheck size={12} />
                                         <span>Secure SSL Encryption</span>
