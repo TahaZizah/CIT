@@ -123,6 +123,12 @@ export default function OrderPage() {
     // Scroll to top on mount
     useEffect(() => window.scrollTo(0, 0), []);
 
+    // Calculate price based on student type
+    const isLaureat = formData.year === 'Lauréat';
+    const totalPrice = isLaureat ? 200 : 180;
+    const advancePayment = 50;
+    const balancePayment = totalPrice - advancePayment;
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -406,10 +412,10 @@ export default function OrderPage() {
                                     />
                                     <div className="flex-1">
                                         <div className="text-sm text-cyan-100 font-medium group-hover:text-cyan-300 transition-colors">
-                                            I agree to pay a 50 DH advance to confirm my order
+                                            I agree to pay a {advancePayment} DH advance to confirm my order
                                         </div>
                                         <div className="text-xs text-slate-400 mt-1 leading-relaxed">
-                                            The remaining 130 DH will be paid when collecting the hoodie at the CIT stand on campus.
+                                            The remaining {balancePayment} DH will be paid when collecting the hoodie at the CIT stand on campus.
                                         </div>
                                     </div>
                                 </label>
@@ -454,28 +460,28 @@ export default function OrderPage() {
                                     <div className="space-y-2 text-sm">
                                         <div className="flex justify-between text-slate-400">
                                             <span>Subtotal</span>
-                                            <span>225.00 DH</span>
+                                            <span>{isLaureat ? '250.00' : '225.00'} DH</span>
                                         </div>
                                         <div className="flex justify-between text-slate-400">
                                             <span>Shipping</span>
                                             <span className="text-cyan-400">FREE</span>
                                         </div>
                                         <div className="flex justify-between text-emerald-400/80">
-                                            <span>Student Discount</span>
-                                            <span>-20%</span>
+                                            <span>{isLaureat ? 'Lauréat Price' : 'Student Discount'}</span>
+                                            <span>{isLaureat ? '' : '-20%'}</span>
                                         </div>
                                     </div>
 
                                     <div className="border-t border-slate-800 pt-4 mt-4 space-y-2">
                                         <div className="flex justify-between items-end">
                                             <span className="text-slate-200 font-bold">Total</span>
-                                            <span className="text-2xl font-bold text-cyan-400 font-mono">180.00 DH</span>
+                                            <span className="text-2xl font-bold text-cyan-400 font-mono">{totalPrice}.00 DH</span>
                                         </div>
                                         <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 mt-3">
                                             <div className="flex items-start gap-2">
                                                 <Info size={14} className="text-amber-400 mt-0.5 flex-shrink-0" />
                                                 <div className="text-xs text-amber-200/90">
-                                                    <span className="font-bold">Advance: 50 DH</span> · Balance on pickup: 130 DH
+                                                    <span className="font-bold">Advance: {advancePayment} DH</span> · Balance on pickup: {balancePayment} DH
                                                 </div>
                                             </div>
                                         </div>
