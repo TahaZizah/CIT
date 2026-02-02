@@ -126,7 +126,7 @@ export default function OrderPage() {
     // Calculate price based on student type
     const isLaureat = formData.year === 'Lauréat';
     const totalPrice = isLaureat ? 200 : 180;
-    const advancePayment = 50;
+    const advancePayment = 180;
     const balancePayment = totalPrice - advancePayment;
 
     const handleChange = (e) => {
@@ -184,7 +184,7 @@ export default function OrderPage() {
         // IMPORTANT: Must match form option casing exactly
         formBody.append(FORM_FIELDS.PAYMENT_METHOD, formData.paymentMethod);
         // IMPORTANT: Must match checkbox label exactly
-        formBody.append(FORM_FIELDS.AGREEMENT, "I agree to pay a 50 DH advance to confirm my order");
+        formBody.append(FORM_FIELDS.AGREEMENT, `I agree to pay the full amount of ${totalPrice} DH to confirm my order`);
 
         try {
             await fetch(GOOGLE_FORM_ACTION_URL, {
@@ -368,7 +368,6 @@ export default function OrderPage() {
                                     />
                                     <div>
                                         <div className="font-bold text-cyan-100 text-sm">Cash on Delivery</div>
-                                        <div className="text-xs text-cyan-200/60 mt-1">Pay 50 DH advance now, rest on pickup at CIT HQ.</div>
                                     </div>
                                 </label>
 
@@ -386,7 +385,6 @@ export default function OrderPage() {
                                     />
                                     <div className="flex-1">
                                         <div className="font-bold text-cyan-100 text-sm">Wire Transfer</div>
-                                        <div className="text-xs text-cyan-200/60 mt-1">Transfer 50 DH advance, pay rest on pickup.</div>
                                         {formData.paymentMethod === 'Wire transfer' && (
                                             <div className="mt-3 p-3 bg-slate-950/50 rounded border border-cyan-500/20">
                                                 <div className="text-xs text-slate-400 mb-1.5">Transfer to:</div>
@@ -403,7 +401,7 @@ export default function OrderPage() {
                                 </label>
                             </div>
 
-                            {/* Advance Payment Confirmation */}
+                            {/* Full Payment Confirmation */}
                             <div className="mt-6 pt-6 border-t border-slate-800">
                                 <label className="flex items-start gap-3 cursor-pointer group">
                                     <input
@@ -415,10 +413,10 @@ export default function OrderPage() {
                                     />
                                     <div className="flex-1">
                                         <div className="text-sm text-cyan-100 font-medium group-hover:text-cyan-300 transition-colors">
-                                            I agree to pay a {advancePayment} DH advance to confirm my order
+                                            I agree to pay the full amount of {totalPrice} DH to confirm my order
                                         </div>
                                         <div className="text-xs text-slate-400 mt-1 leading-relaxed">
-                                            The remaining {balancePayment} DH will be paid when collecting the hoodie at the CIT stand on campus.
+                                            Payment must be completed before collecting your hoodie at the CIT stand on campus.
                                         </div>
                                     </div>
                                 </label>
