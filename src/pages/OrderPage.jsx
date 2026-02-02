@@ -355,8 +355,8 @@ export default function OrderPage() {
 
                             <div className="space-y-3">
                                 <label className={`flex items-start gap-4 p-4 border rounded-lg cursor-pointer transition-all ${formData.paymentMethod === 'Cash On Delivery'
-                                        ? 'border-cyan-500/40 bg-cyan-950/20 hover:bg-cyan-950/30'
-                                        : 'border-slate-700 bg-slate-800/30 hover:bg-slate-800/50'
+                                    ? 'border-cyan-500/40 bg-cyan-950/20 hover:bg-cyan-950/30'
+                                    : 'border-slate-700 bg-slate-800/30 hover:bg-slate-800/50'
                                     }`}>
                                     <input
                                         type="radio"
@@ -373,8 +373,8 @@ export default function OrderPage() {
                                 </label>
 
                                 <label className={`flex items-start gap-4 p-4 border rounded-lg cursor-pointer transition-all ${formData.paymentMethod === 'Wire transfer'
-                                        ? 'border-cyan-500/40 bg-cyan-950/20 hover:bg-cyan-950/30'
-                                        : 'border-slate-700 bg-slate-800/30 hover:bg-slate-800/50'
+                                    ? 'border-cyan-500/40 bg-cyan-950/20 hover:bg-cyan-950/30'
+                                    : 'border-slate-700 bg-slate-800/30 hover:bg-slate-800/50'
                                     }`}>
                                     <input
                                         type="radio"
@@ -460,16 +460,18 @@ export default function OrderPage() {
                                     <div className="space-y-2 text-sm">
                                         <div className="flex justify-between text-slate-400">
                                             <span>Subtotal</span>
-                                            <span>{isLaureat ? '250.00' : '225.00'} DH</span>
+                                            <span>{isLaureat ? '200.00' : '225.00'} DH</span>
                                         </div>
                                         <div className="flex justify-between text-slate-400">
                                             <span>Shipping</span>
                                             <span className="text-cyan-400">FREE</span>
                                         </div>
-                                        <div className="flex justify-between text-emerald-400/80">
-                                            <span>{isLaureat ? 'Lauréat Price' : 'Student Discount'}</span>
-                                            <span>{isLaureat ? '' : '-20%'}</span>
-                                        </div>
+                                        {!isLaureat && (
+                                            <div className="flex justify-between text-emerald-400/80">
+                                                <span>Student Discount</span>
+                                                <span>-20%</span>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="border-t border-slate-800 pt-4 mt-4 space-y-2">
