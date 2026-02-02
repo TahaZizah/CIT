@@ -16,6 +16,5 @@ export default defineConfig({
     },
     chunkSizeWarningLimit: 1000,
   },
-  base: process.env.NODE_ENV === "production" ? "/CIT/" : "/",
-
+  base: '/',
 })
