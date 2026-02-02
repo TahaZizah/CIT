@@ -391,7 +391,10 @@ export default function OrderPage() {
                                             <div className="mt-3 p-3 bg-slate-950/50 rounded border border-cyan-500/20">
                                                 <div className="text-xs text-slate-400 mb-1.5">Transfer to:</div>
                                                 <div className="font-mono text-cyan-300 text-sm font-bold tracking-wider">
-                                                    230 107 1111204002703683 47
+                                                    FARID ID AISSA
+                                                    |
+                                                    011 810 0000082000014337 37
+
                                                 </div>
                                                 <div className="text-[10px] text-slate-500 mt-1"> Bank Of Africa</div>
                                             </div>
