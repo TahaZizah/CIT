@@ -480,14 +480,6 @@ export default function OrderPage() {
                                             <span className="text-slate-200 font-bold">Total</span>
                                             <span className="text-2xl font-bold text-cyan-400 font-mono">{totalPrice}.00 DH</span>
                                         </div>
-                                        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 mt-3">
-                                            <div className="flex items-start gap-2">
-                                                <Info size={14} className="text-amber-400 mt-0.5 flex-shrink-0" />
-                                                <div className="text-xs text-amber-200/90">
-                                                    <span className="font-bold">Advance: {advancePayment} DH</span> · Balance on pickup: {balancePayment} DH
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
 
                                     <button
